@@ -1,0 +1,100 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# R / RStudio
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# R package / cache files
+.Rcache/
+renv/library/
+renv/staging/
+packrat/lib/
+packrat/src/
+
+# Quarto / R Markdown
+*_cache/
+*_files/
+.quarto/
+_site/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# Conda
+.conda/
+conda-meta/
+
+# Logs / temporary files
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+tmp/
+temp/
+
+# IDEs
+.vscode/
+.idea/
+
+# Large bioinformatics files
+*.bam
+*.bai
+*.cram
+*.crai
+*.sam
+
+*.vcf
+*.vcf.gz
+*.vcf.gz.tbi
+*.bcf
+*.bcf.csi
+
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+
+*.fasta.gz
+*.fa.gz
+*.fna.gz
+
+# Compressed archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Large/intermediate analysis outputs
+results/raw/
+results/tmp/
+output/tmp/
+scratch/
+
+# SLURM output
+slurm-*.out
+*.out
+*.err
+
+# Credentials / secrets
+.env
+.env.*
+*.pem
+*.key
+credentials*
+secrets*
+
+# Microsoft / Office temporary files
+~$*
