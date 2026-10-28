@@ -29,10 +29,6 @@
 ##                                  (copy these four files from
 ##                                   ${ROOT}/01_variant_calling/results/080_results_filtering
 ##                                   to local/01_variant_calling/data/080_data_filtering)
-##
-## What each choice rests on:
-##   site, genotype and sample      Danecek et al. 2021, GigaScience 10:giab008
-##   filters (bcftools)
 ## ============================================================================
 
 library(tidyverse)

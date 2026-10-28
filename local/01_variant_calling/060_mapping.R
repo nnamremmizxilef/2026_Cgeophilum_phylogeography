@@ -10,9 +10,6 @@
 ##                                  (copy flagstat and coverage of
 ##                                   ${ROOT}/01_variant_calling/results/060_results_mapping/consensus
 ##                                   to local/01_variant_calling/data/060_data_mapping)
-##
-## What each choice rests on:
-##   flagstat, coverage             Danecek et al. 2021, GigaScience 10:giab008
 ## ============================================================================
 
 library(tidyverse)

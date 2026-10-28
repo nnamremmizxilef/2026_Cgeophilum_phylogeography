@@ -14,11 +14,6 @@
 ##                                   to local/01_variant_calling/data/030_data_multiqc,
 ##                                   renamed to start with pre (raw), post (trimmed)
 ##                                   and fastp)
-##
-## What each choice rests on:
-##   read trimming, pair counts     Chen et al. 2018, Bioinformatics 34:i884-i890
-##   FastQC module verdicts         Andrews 2010, Babraham Bioinformatics (software)
-##   MultiQC reports                Ewels et al. 2016, Bioinformatics 32:3047-3048
 ## ============================================================================
 
 library(tidyverse)

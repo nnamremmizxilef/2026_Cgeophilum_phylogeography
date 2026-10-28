@@ -9,9 +9,6 @@
 ##                                  (copy it from
 ##                                   ${ROOT}/01_variant_calling/results/070_results_variant_calling_consensus
 ##                                   to local/01_variant_calling/data/070_data_variant_calling)
-##
-## What each choice rests on:
-##   variant calling (bcftools)     Danecek et al. 2021, GigaScience 10:giab008
 ## ============================================================================
 
 library(tidyverse)

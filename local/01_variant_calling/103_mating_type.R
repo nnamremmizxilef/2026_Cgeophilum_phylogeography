@@ -22,9 +22,6 @@
 ##   lineage_labels.tsv             lineages at K = 4, 5 and 6, from local/03_delimitation/001_lineage_labels.R
 ##   samples_removed_missingness.tsv
 ##                                  samples removed by missingness, from local/01_variant_calling/080_filtering.R
-##
-## What each choice rests on:
-##   Benjamini-Hochberg             Benjamini & Hochberg 1995, J R Stat Soc B 57:289-300
 ## ============================================================================
 
 library(tidyverse)

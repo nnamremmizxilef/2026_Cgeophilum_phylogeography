@@ -8,11 +8,6 @@
 ##                                  (both from hpc/01_variant_calling/090_clone_id.sh;
 ##                                   copy them from ${ROOT}/01_variant_calling/results/090_results_clone_id
 ##                                   to local/01_variant_calling/data/090_data_clone_id)
-##
-## What each choice rests on:
-##   plink IBS counts               Chang et al. 2015, GigaScience 4:7
-##   poppr                          Kamvar et al. 2014, PeerJ 2:e281
-##   filter_stats, cutoff_predictor Kamvar et al. 2015, Front Genet 6:208
 ## ============================================================================
 
 library(tidyverse)
