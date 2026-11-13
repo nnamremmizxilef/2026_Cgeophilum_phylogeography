@@ -32,12 +32,20 @@ Isolates come from two sampling projects with different designs:
 
 ## Workflow
 
-```mermaid
-flowchart LR
-    A["01 Variant calling<br/>reads, reference,<br/>variants, clones"] --> B["02 Structure and phylogeny<br/>clustering, species trees,<br/>concordance"]
-    B --> C["03 Delimitation<br/>lineage labels, gene flow,<br/>mPTP, BPP"]
-    C --> D["04 Diversity and niche<br/>diversity, clonality,<br/>soil and climate niches"]
-    A & B & C & D --> E["00 General<br/>map and<br/>publication figures"]
+```
+01_variant_calling              reads, reference, variants, clones
+        │
+        ▼
+02_structure_phylogeny          clustering, species trees, concordance
+        │
+        ▼
+03_delimitation                 lineage labels, gene flow, mPTP, BPP
+        │
+        ▼
+04_diversity_niche_selection    diversity, clonality, soil and climate niches
+        │
+        ▼
+00_general                      sampling map and publication figures (all phases)
 ```
 
 | Phase | Content | Main tools |
