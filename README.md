@@ -15,7 +15,13 @@ hpc/<phase>/NNN_topic.sh     cluster scripts (SLURM)
 local/<phase>/NNN_topic.R    R scripts
 ```
 
-Phases: `01_variant_calling` (further phases to follow).
+Phases (further phases to follow):
+
+- `01_variant_calling`: read trimming and QC; single-copy orthologue reference (OrthoFinder); mapping, variant calling and filtering; clone identification; sample metadata and mating types.
+- `02_structure_phylogeny`: call sets for phylogeny and clustering; population clustering (DAPC, sNMF, fineRADstructure); per-gene consensus sequences and alignments; concatenation (IQ-TREE), coalescent (ASTER) and site-based (CASTER-site) species trees; site and gene concordance factors; topology tests; monophyly of the clusters in each tree.
+- `03_delimitation`: lineage labels at K = 4 to 6; unit trees (ASTER), Neighbour-Net, recombination (PHI, index of association), gene flow (Dsuite), mPTP and BPP (A00, A11, gdi); one table of evidence per unit.
+
+Scripts run in numerical order within a phase; exceptions are named in the scripts.
 
 - Cluster scripts: `export ROOT=/path/to/project` (the folder holding the phase folders), then `sbatch` or `bash` the script. Add account, QOS and partition at submission.
 - R scripts: open `local/cenococcum_europe.Rproj`; paths are relative to `local/`.

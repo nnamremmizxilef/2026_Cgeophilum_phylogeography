@@ -52,12 +52,6 @@ echo "Sample list: ${SAMPLE_LIST}"
 echo ""
 echo "########## Contigs ##########"
 
-### reference index (if missing)
-if [[ ! -f "${REFERENCE}.fai" ]]; then
-    echo "Creating reference index..."
-    samtools faidx "${REFERENCE}"
-fi
-
 CONTIGS="${RESULTS}/consensus_scaffold_list.txt"
 awk '{print $1}' "${REFERENCE}.fai" > "${CONTIGS}"
 

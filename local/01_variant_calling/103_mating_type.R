@@ -161,38 +161,22 @@ lineages <- read_tsv(f_lineage, show_col_types = FALSE) %>%
   transmute(sample, K4 = k4, K5 = k5, K6 = k6) %>%
   select(sample, all_of(lineage_k))
 
-### locus tables (optional)
-variants <- if (file.exists(f_variants)) {
-  read_tsv(f_variants, show_col_types = FALSE,
-           col_types = cols(gt = col_character(), ad = col_character())) %>%
-    fix_names()
-} else {
-  message("no variant table, the locus section is skipped")
-  NULL
-}
+### locus tables
+variants <- read_tsv(f_variants, show_col_types = FALSE,
+                     col_types = cols(gt = col_character(), ad = col_character())) %>%
+  fix_names()
 
-callable <- if (file.exists(f_callable)) {
-  read_tsv(f_callable, show_col_types = FALSE) %>%
-    fix_names()
-} else {
-  NULL
-}
+callable <- read_tsv(f_callable, show_col_types = FALSE) %>%
+  fix_names()
 
 ### primer sites (primer in reference orientation)
-primers <- if (file.exists(f_primers)) {
-  read_tsv(f_primers, show_col_types = FALSE) %>%
-    transmute(idiomorph = seqID, primer = patternName, strand, start, end,
-              primer_plus = if_else(strand == "+", toupper(pattern), revcomp(pattern)))
-} else {
-  NULL
-}
+primers <- read_tsv(f_primers, show_col_types = FALSE) %>%
+  transmute(idiomorph = seqID, primer = patternName, strand, start, end,
+            primer_plus = if_else(strand == "+", toupper(pattern), revcomp(pattern)))
 
-primer_gt <- if (file.exists(f_primer_gt)) {
-  read_tsv(f_primer_gt, show_col_types = FALSE, col_types = cols(gt = col_character())) %>%
-    fix_names()
-} else {
-  NULL
-}
+primer_gt <- read_tsv(f_primer_gt, show_col_types = FALSE,
+                      col_types = cols(gt = col_character())) %>%
+  fix_names()
 
 ### analysis set (ingroup passing missingness, single samples as own MLG,
 ### relative depth)
@@ -473,112 +457,100 @@ clone_mat %>%
 
 # the locus --------------------------------------------------------------------
 
-### substitution rate per sample (filled below)
-sub_sample <- tibble(sample = character(), sub_rate = numeric())
+### substitutions in the called idiomorph (SNPs at callable depth)
+var_own <- variants %>%
+  inner_join(select(dat, sample, site, country, mat_called), by = "sample") %>%
+  own_idiomorph() %>%
+  filter(!gt %in% c("0", "."), dp >= depth_min) %>%
+  mutate(alt = gt_allele(ref, alt, gt)) %>%
+  filter(nchar(ref) == 1, nchar(alt) == 1)
 
-if (!is.null(variants)) {
+### substitutions under a primer
+var_own <- var_own %>%
+  left_join(select(primers, idiomorph, primer, start, end),
+            by = join_by(idiomorph, between(pos, start, end))) %>%
+  mutate(region = if_else(is.na(primer), "idiomorph", "primer")) %>%
+  select(-start, -end)
 
-  ### substitutions in the called idiomorph (SNPs at callable depth)
-  var_own <- variants %>%
-    inner_join(select(dat, sample, site, country, mat_called), by = "sample") %>%
-    own_idiomorph() %>%
-    filter(!gt %in% c("0", "."), dp >= depth_min) %>%
-    mutate(alt = gt_allele(ref, alt, gt)) %>%
-    filter(nchar(ref) == 1, nchar(alt) == 1)
+cat("\n=== substitutions by position in the locus ===\n")
+var_own %>%
+  group_by(idiomorph, region) %>%
+  summarise(sites = n_distinct(pos), samples = n_distinct(sample),
+            .groups = "drop") %>%
+  print(n = Inf)
 
-  ### substitutions under a primer
-  if (!is.null(primers) && !is.null(primer_gt)) {
+### sample bases against the primer sequence, with the PCR call
+primer_mm <- primer_gt %>%
+  inner_join(select(dat, sample, site, mat_called, mat_pcr), by = "sample") %>%
+  own_idiomorph() %>%
+  filter(gt != ".", dp >= depth_min) %>%
+  mutate(base = gt_allele(ref, alt, gt),
+         base = if_else(nchar(base) == 1, toupper(base), NA_character_)) %>%
+  filter(!is.na(base)) %>%
+  distinct(sample, idiomorph, pos, .keep_all = TRUE) %>%
+  inner_join(primers, by = join_by(idiomorph, between(pos, start, end))) %>%
+  mutate(primer_base = str_sub(primer_plus, pos - start + 1, pos - start + 1),
+         from_3prime = if_else(strand == "+", end - pos, pos - start),
+         mismatch    = base != primer_base) %>%
+  group_by(sample, site, mat_called, mat_pcr, primer) %>%
+  summarise(n_sites   = n(),
+            mm        = sum(mismatch),
+            mm_3prime = sum(mismatch & from_3prime < prime3),
+            .groups = "drop") %>%
+  mutate(pcr = case_when(!mat_pcr %in% c("MAT1", "MAT2")    ~ "no PCR call",
+                         mat_pcr == as.character(mat_called) ~ "agree",
+                         TRUE                                ~ "differ"))
 
-    var_own <- var_own %>%
-      left_join(select(primers, idiomorph, primer, start, end),
-                by = join_by(idiomorph, between(pos, start, end))) %>%
-      mutate(region = if_else(is.na(primer), "idiomorph", "primer")) %>%
-      select(-start, -end)
+write_tsv(primer_mm, file.path(out_root, "primer_mismatches.tsv"))
 
-    cat("\n=== substitutions by position in the locus ===\n")
-    var_own %>%
-      group_by(idiomorph, region) %>%
-      summarise(sites = n_distinct(pos), samples = n_distinct(sample),
-                .groups = "drop") %>%
-      print(n = Inf)
+cat("\n=== samples with a mismatch under a primer, by site ===\n")
+primer_mm %>%
+  filter(mm > 0) %>%
+  count(site, primer, name = "n_samples") %>%
+  arrange(desc(n_samples)) %>% print(n = Inf)
 
-    ### sample bases against the primer sequence, with the PCR call
-    primer_mm <- primer_gt %>%
-      inner_join(select(dat, sample, site, mat_called, mat_pcr), by = "sample") %>%
-      own_idiomorph() %>%
-      filter(gt != ".", dp >= depth_min) %>%
-      mutate(base = gt_allele(ref, alt, gt),
-             base = if_else(nchar(base) == 1, toupper(base), NA_character_)) %>%
-      filter(!is.na(base)) %>%
-      distinct(sample, idiomorph, pos, .keep_all = TRUE) %>%
-      inner_join(primers, by = join_by(idiomorph, between(pos, start, end))) %>%
-      mutate(primer_base = str_sub(primer_plus, pos - start + 1, pos - start + 1),
-             from_3prime = if_else(strand == "+", end - pos, pos - start),
-             mismatch    = base != primer_base) %>%
-      group_by(sample, site, mat_called, mat_pcr, primer) %>%
-      summarise(n_sites   = n(),
-                mm        = sum(mismatch),
-                mm_3prime = sum(mismatch & from_3prime < prime3),
-                .groups = "drop") %>%
-      mutate(pcr = case_when(!mat_pcr %in% c("MAT1", "MAT2")    ~ "no PCR call",
-                             mat_pcr == as.character(mat_called) ~ "agree",
-                             TRUE                                ~ "differ"))
+cat("\n=== 3' primer mismatches against the PCR ===\n")
+primer_mm %>%
+  group_by(sample, pcr) %>%
+  summarise(mm_3prime = sum(mm_3prime), .groups = "drop") %>%
+  count(pcr, mismatch_3prime = mm_3prime > 0) %>%
+  print(n = Inf)
 
-    write_tsv(primer_mm, file.path(out_root, "primer_mismatches.tsv"))
+### substitution spectrum over unique sites
+spectrum <- var_own %>%
+  distinct(idiomorph, pos, ref, alt) %>%
+  mutate(change = paste0(ref, ">", alt),
+         class  = if_else(change %in% c("A>G", "G>A", "C>T", "T>C"),
+                          "transition", "transversion")) %>%
+  count(idiomorph, change, class, name = "n") %>%
+  group_by(idiomorph) %>%
+  mutate(f = n / sum(n)) %>%
+  ungroup()
 
-    cat("\n=== samples with a mismatch under a primer, by site ===\n")
-    primer_mm %>%
-      filter(mm > 0) %>%
-      count(site, primer, name = "n_samples") %>%
-      arrange(desc(n_samples)) %>% print(n = Inf)
+### transitions and transversions per idiomorph
+ti_tv <- spectrum %>%
+  group_by(idiomorph) %>%
+  summarise(n_variants    = sum(n),
+            transitions   = sum(n[class == "transition"]),
+            transversions = sum(n[class == "transversion"]),
+            .groups = "drop") %>%
+  mutate(ti_tv = transitions / transversions)
 
-    cat("\n=== 3' primer mismatches against the PCR ===\n")
-    primer_mm %>%
-      group_by(sample, pcr) %>%
-      summarise(mm_3prime = sum(mm_3prime), .groups = "drop") %>%
-      count(pcr, mismatch_3prime = mm_3prime > 0) %>%
-      print(n = Inf)
-  }
+write_tsv(spectrum, file.path(out_root, "substitution_spectrum.tsv"))
+write_tsv(ti_tv,    file.path(out_root, "substitution_summary.tsv"))
 
-  ### substitution spectrum over unique sites
-  spectrum <- var_own %>%
-    distinct(idiomorph, pos, ref, alt) %>%
-    mutate(change = paste0(ref, ">", alt),
-           class  = if_else(change %in% c("A>G", "G>A", "C>T", "T>C"),
-                            "transition", "transversion")) %>%
-    count(idiomorph, change, class, name = "n") %>%
-    group_by(idiomorph) %>%
-    mutate(f = n / sum(n)) %>%
-    ungroup()
+cat("\n=== substitution spectrum per idiomorph ===\n")
+print(ti_tv, n = Inf)
 
-  ### transitions and transversions per idiomorph
-  ti_tv <- spectrum %>%
-    group_by(idiomorph) %>%
-    summarise(n_variants    = sum(n),
-              transitions   = sum(n[class == "transition"]),
-              transversions = sum(n[class == "transversion"]),
-              .groups = "drop") %>%
-    mutate(ti_tv = transitions / transversions)
+### substitutions per callable site
+sub_sample <- callable %>%
+  inner_join(select(dat, sample, mat_called), by = "sample") %>%
+  own_idiomorph() %>%
+  left_join(count(var_own, sample, name = "n_sub"), by = "sample") %>%
+  mutate(n_sub = replace_na(n_sub, 0L),
+         sub_rate = n_sub / n_callable)
 
-  write_tsv(spectrum, file.path(out_root, "substitution_spectrum.tsv"))
-  write_tsv(ti_tv,    file.path(out_root, "substitution_summary.tsv"))
-
-  cat("\n=== substitution spectrum per idiomorph ===\n")
-  print(ti_tv, n = Inf)
-
-  ### substitutions per callable site
-  if (!is.null(callable)) {
-
-    sub_sample <- callable %>%
-      inner_join(select(dat, sample, mat_called), by = "sample") %>%
-      own_idiomorph() %>%
-      left_join(count(var_own, sample, name = "n_sub"), by = "sample") %>%
-      mutate(n_sub = replace_na(n_sub, 0L),
-             sub_rate = n_sub / n_callable)
-
-    write_tsv(sub_sample, file.path(out_root, "substitutions_by_sample.tsv"))
-  }
-}
+write_tsv(sub_sample, file.path(out_root, "substitutions_by_sample.tsv"))
 
 
 
