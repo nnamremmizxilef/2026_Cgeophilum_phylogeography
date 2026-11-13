@@ -220,7 +220,8 @@ print(unit_sizes, n = Inf)
 cat("\n\nOutput written to", out_root, "\n")
 ### copy lineage_labels.tsv and lineage_labels.tsv.md5 to ${ROOT}/03_delimitation/supplementary
 ### for hpc/02_structure_phylogeny/052_species_tree_decloned.sh and hpc/03_delimitation/010,
-### 020, 021, 030, 040 and 050
+### 020, 021, 030, 040 and 050, and to ${ROOT}/04_diversity_niche_selection/supplementary for
+### hpc/04_diversity_niche_selection/010_sequence_distances.sh
 cat("  lineage_labels.tsv\n")
 cat("  lineage_labels.tsv.md5\n")
 cat("  unit_sizes.tsv\n")

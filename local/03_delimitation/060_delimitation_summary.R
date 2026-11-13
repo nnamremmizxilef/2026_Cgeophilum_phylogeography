@@ -27,9 +27,9 @@
 ##   bpp_gdi.tsv                    gdi per unit and locus set
 ##   publication_bpp_a11.tsv        A11 posterior per delimited species
 ##                                  (both from local/03_delimitation/051_bpp.R)
-##   depth_profiles.tsv             depth profile test per unit, from the soil niche script 040
-##                                  of local/04_diversity_niche_selection (results/040_results_soil_niche;
-##                                  a later phase, run it before this script)
+##   depth_profiles.tsv             depth profile test per unit,
+##                                  from local/04_diversity_niche_selection/040_soil_niche.R
+##                                  (a later phase, run it before this script)
 ## ============================================================================
 
 library(tidyverse)
