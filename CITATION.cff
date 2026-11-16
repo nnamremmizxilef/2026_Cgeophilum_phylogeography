@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it using the metadata from this file. The associated manuscript is in preparation."
+type: software
+title: "Phylogeography and cryptic lineages of Cenococcum geophilum in Europe: analysis code"
+abstract: >-
+  Analysis code for a study of population structure, cryptic lineages and
+  niches of the ectomycorrhizal fungus Cenococcum geophilum across Europe.
+  The scripts take whole-genome short reads of several hundred European
+  isolates to call variants on a reference built from single-copy
+  orthologues, identify/correct clones and describe population structure and
+  phylogeny, delimit lineages with several independent lines of evidence,
+  and describe diversity, clonality, recombination and the soil and climate
+  niches of these lineages.
+authors:
+  - family-names: Zimmermann
+    given-names: Felix
+    affiliation: "Swiss Federal Institute for Forest, Snow and Landscape Research WSL, Birmensdorf, Switzerland"
+    orcid: "https://orcid.org/0009-0002-0762-2454"
+repository-code: "https://github.com/nnamremmizxilef/2026_Cgeophilum_phylogeography"
+license: CC0-1.0
+keywords:
+  - Cenococcum geophilum
+  - ectomycorrhizal fungi
+  - phylogeography
+  - cryptic lineages
+  - species delimitation
+  - population genomics
+  - phylogenomics
+  - soil niche
+# preferred-citation (insert paper after publication here):
+#   type: article
+#   title: "..."
+#   authors:
+#     - family-names: Zimmermann
+#       given-names: Felix
+#   journal: "..."
+#   year: 2027
+#   doi: "..."
